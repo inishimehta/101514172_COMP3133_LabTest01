@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <body>
+    <h3>Join Room</h3>
+
+    <input id="username" placeholder="Username" />
+    <select id="room">
+      <option value="devops">devops</option>
+      <option value="cloud">cloud</option>
+      <option value="covid19">covid19</option>
+      <option value="sports">sports</option>
+      <option value="nodeJS">nodeJS</option>
+    </select>
+    <button id="join">Join</button>
+
+    <script>
+      document.getElementById("join").onclick = () => {
+        const u = document.getElementById("username").value.trim();
+        const r = document.getElementById("room").value;
+        if (!u) return alert("Enter username");
+        localStorage.setItem("username", u);
+        localStorage.setItem("room", r);
+        window.location = "/chat.html";
+      };
+    </script>
+  </body>
+</html>

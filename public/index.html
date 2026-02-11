@@ -1,0 +1,11 @@
+<!doctype html>
+<html>
+  <body>
+    <h3>Chat test</h3>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      socket.on("connect", () => console.log("connected", socket.id));
+    </script>
+  </body>
+</html>
