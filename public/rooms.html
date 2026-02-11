@@ -1,26 +1,47 @@
 <!doctype html>
 <html>
   <body>
-    <h3>Join Room</h3>
+    <h3>Chat app</h3>
 
-    <input id="username" placeholder="Username" />
+    <label>Username</label>
+    <input id="username" placeholder="Enter username" />
+
+    <label>Room</label>
     <select id="room">
-      <option value="devops">devops</option>
-      <option value="cloud">cloud</option>
-      <option value="covid19">covid19</option>
-      <option value="sports">sports</option>
-      <option value="nodeJS">nodeJS</option>
+      <option value="Fashion">Fashion</option>
+      <option value="Aliens">Aliens</option>
+      <option value="MentalHealth">MentalHealth</option>
+      <option value="Entrepreneurship">Entrepreneurship</option>
+      <option value="Travel">Travel</option>
+      <option value="Technology">Technology</option>
+      <option value="Paranormal">Paranormal</option>
     </select>
-    <button id="join">Join</button>
+
+    <button id="join">Join Chat Room</button>
+    <button id="logout">Logout</button>
 
     <script>
+      const usernameInput = document.getElementById("username");
+      const storedUsername = localStorage.getItem("username");
+
+      // Require login
+      if (!storedUsername) {
+        window.location = "/login.html";
+      } else {
+        usernameInput.value = storedUsername;
+        usernameInput.readOnly = true;
+      }
+
       document.getElementById("join").onclick = () => {
-        const u = document.getElementById("username").value.trim();
-        const r = document.getElementById("room").value;
-        if (!u) return alert("Enter username");
-        localStorage.setItem("username", u);
-        localStorage.setItem("room", r);
+        const room = document.getElementById("room").value;
+        localStorage.setItem("room", room);
         window.location = "/chat.html";
+      };
+
+      document.getElementById("logout").onclick = () => {
+        localStorage.removeItem("username");
+        localStorage.removeItem("room");
+        window.location = "/login.html";
       };
     </script>
   </body>

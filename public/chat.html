@@ -1,69 +1,133 @@
-require("dotenv").config();
+<!doctype html>
+<html>
+  <body>
+    <h3 id="title">Chat</h3>
+    <button id="leave">Leave Room</button>
+    <button id="logout">Logout</button>
 
-const express = require("express");
-const http = require("http");
-const mongoose = require("mongoose");
-const { Server } = require("socket.io");
+    <div id="messages"></div>
+    <div id="typing"></div>
 
-const GroupMessage = require("./models/GroupMessage");
+    <input id="msg" placeholder="Type message..." />
+    <button id="send">Send</button>
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+    <hr />
+    <h4>Private Message</h4>
+    <select id="dmUser"></select>
+    <input id="dmMsg" placeholder="Type private message..." />
+    <button id="dmSend">Send DM</button>
+    <div id="dmBox"></div>
 
-app.use(express.static("public")); // Serve frontend files
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
 
-async function start() {
-  await mongoose.connect(process.env.MONGO_URI); // Connect MongoDB
-  console.log("MongoDB connected");
+      const username = localStorage.getItem("username");
+      const room = localStorage.getItem("room");
 
-  io.on("connection", (socket) => {
-    console.log("user connected:", socket.id);
+      if (!username) window.location = "/login.html";
+      if (!room) window.location = "/rooms.html";
 
-    // Join a room and send chat history
-    socket.on("joinRoom", async ({ room, username }) => {
-      socket.join(room); // Join room [web:7]
+      document.getElementById("title").innerText = `Room: ${room} | User: ${username}`;
 
-      const msgs = await GroupMessage.find({ room })
-        .sort({ date_sent: 1 })
-        .limit(20);
+      socket.emit("registerUser", { username });
+      socket.emit("joinRoom", { room, username });
 
-      socket.emit("roomHistory", msgs);
-      io.to(room).emit("system", `${username} joined ${room}`); // Notify room [web:7]
-    });
+      socket.on("onlineUsers", (users) => {
+        const sel = document.getElementById("dmUser");
+        const current = sel.value;
+        sel.innerHTML = "";
 
-    // Leave the current room
-    socket.on("leaveRoom", ({ room, username }) => {
-      socket.leave(room); // Leave room [web:7]
-      io.to(room).emit("system", `${username} left ${room}`); // Notify room [web:7]
-    });
+        users
+          .filter((u) => u !== username)
+          .forEach((u) => {
+            const opt = document.createElement("option");
+            opt.value = u;
+            opt.innerText = u;
+            sel.appendChild(opt);
+          });
 
-    // Save and broadcast room message
-    socket.on("groupMessage", async ({ room, from, message }) => {
-      const doc = await GroupMessage.create({
-        from_user: from,
-        room,
-        message
+        if (current) sel.value = current;
       });
 
-      io.to(room).emit("groupMessage", {
-        room: doc.room,
-        from: doc.from_user,
-        message: doc.message,
-        date_sent: doc.date_sent
-      }); // Broadcast to room [web:7]
-    });
+      socket.on("roomHistory", (msgs) => {
+        const box = document.getElementById("messages");
+        box.innerHTML = "";
+        msgs.forEach((m) => {
+          const div = document.createElement("div");
+          div.innerText = `${m.from_user}: ${m.message}`;
+          box.appendChild(div);
+        });
+      });
 
-    socket.on("disconnect", () => {
-      console.log("user disconnected:", socket.id);
-    });
-  });
+      socket.on("system", (text) => {
+        const div = document.createElement("div");
+        div.innerText = text;
+        document.getElementById("messages").appendChild(div);
+      });
 
-  const PORT = process.env.PORT || 3000;
-  server.listen(PORT, () => console.log("Listening on " + PORT));
-}
+      socket.on("groupMessage", (payload) => {
+        const div = document.createElement("div");
+        div.innerText = `${payload.from}: ${payload.message}`;
+        document.getElementById("messages").appendChild(div);
+      });
 
-start().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+      const typingDiv = document.getElementById("typing");
+      let typingTimeout;
+
+      document.getElementById("msg").addEventListener("input", () => {
+        socket.emit("typing", { room, username });
+
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+          socket.emit("stopTyping", { room, username });
+        }, 1500);
+      });
+
+      socket.on("typing", ({ username }) => {
+        typingDiv.innerText = `${username} is typing...`;
+      });
+
+      socket.on("stopTyping", () => {
+        typingDiv.innerText = "";
+      });
+
+      document.getElementById("send").onclick = () => {
+        const message = document.getElementById("msg").value.trim();
+        if (!message) return;
+        socket.emit("groupMessage", { room, from: username, message });
+        document.getElementById("msg").value = "";
+        socket.emit("stopTyping", { room, username });
+      };
+
+      document.getElementById("dmSend").onclick = () => {
+        const to_user = document.getElementById("dmUser").value;
+        const message = document.getElementById("dmMsg").value.trim();
+        if (!to_user || !message) return;
+
+        socket.emit("privateMessage", { to_user, from_user: username, message });
+        document.getElementById("dmMsg").value = "";
+      };
+
+      socket.on("privateMessage", (p) => {
+        const div = document.createElement("div");
+        div.innerText = `[DM] ${p.from_user} -> ${p.to_user}: ${p.message}`;
+        document.getElementById("dmBox").appendChild(div);
+      });
+
+      document.getElementById("leave").onclick = () => {
+        socket.emit("stopTyping", { room, username });
+        socket.emit("leaveRoom", { room, username });
+        localStorage.removeItem("room");
+        window.location = "/rooms.html";
+      };
+
+      document.getElementById("logout").onclick = () => {
+        socket.emit("stopTyping", { room, username });
+        socket.emit("leaveRoom", { room, username });
+        localStorage.clear();
+        window.location = "/login.html";
+      };
+    </script>
+  </body>
+</html>
