@@ -1,0 +1,134 @@
+/* public/app.css */
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
+
+:root{
+  --grad-a:#f99cc6;   /* vibrant pink */
+  --grad-b:#9388f5;   /* violet */
+  --grad-c:#9ae9ff;   /* cyan */
+  --ink:#0f172a;
+  --muted:#6b7280;
+  --card-radius:20px;
+}
+
+html, body { height: 100%; }
+
+body{
+  margin:0;
+  font-family: "Nunito", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--ink);
+  background: radial-gradient(1200px 600px at 15% 20%, rgba(255,255,255,.45), transparent 55%),
+              linear-gradient(135deg, var(--grad-a), var(--grad-b), var(--grad-c));
+  background-attachment: fixed;
+}
+
+.app-shell{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 28px 14px;
+}
+
+.app-card{
+  /* Square + uniform on all screens */
+  width: clamp(400px, 100vw, 650px);
+  height: clamp(400px, 100vw, 650px);
+
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: var(--card-radius);
+  box-shadow: 0 22px 60px rgba(15, 23, 42, .25);
+  overflow: hidden;
+  backdrop-filter: blur(6px);
+
+  /* Layout inside card */
+  display: flex;
+  flex-direction: column;
+}
+
+
+.app-bar{
+  padding: 14px 18px;
+  background: linear-gradient(90deg, rgba(15,23,42,.92), rgba(30,64,175,.75));
+  color:#fff;
+  justify-content:center;
+  font-weight:700;
+  letter-spacing:.2px;
+}
+
+.app-body{
+  padding: 18px;
+  flex: 1;
+  overflow: auto;
+}
+
+.small-muted{ color: var(--muted); font-size: .92rem; }
+
+.chat-grid{
+  display:grid;
+  grid-template-columns: 260px 1fr; /* slimmer left, bigger chat */
+  gap: 14px;
+}
+
+.panel{
+  background:#fff;
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 16px;
+}
+
+.panel-h{
+  padding: 12px 12px 8px 12px;
+  font-weight:700;
+  border-bottom: 1px solid rgba(15,23,42,.06);
+}
+
+.panel-b{ padding: 12px; }
+
+.scroll{
+  overflow-y:auto;
+  max-height: 56vh;
+}
+
+.msg{
+  margin: 10px 0;
+  display:flex;
+  flex-direction:column;
+  gap: 4px;
+}
+
+.msg-h{
+  font-size: .85rem;
+  color: var(--muted);
+  display:flex;
+  justify-content:space-between;
+  gap: 10px;
+}
+
+.bubble{
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(70, 182, 223, 0.18), rgba(123,108,255,.14));
+  border: 1px solid rgba(15,23,42,.06);
+}
+
+.bubble.me{
+  background: linear-gradient(135deg, rgba(255,111,177,.18), rgba(123,108,255,.14));
+  border-color: rgba(123,108,255,.22);
+}
+
+.member{
+  padding: 6px 10px;
+  border-radius: 12px;
+  background:#f8fafc;
+  border: 1px solid rgba(15,23,42,.06);
+  margin-bottom: 8px;
+  font-size: .95rem;
+}
+
+#dmBox{
+  min-height: 260px;
+}
+
+#messages{
+  min-height: 260px;
+}
